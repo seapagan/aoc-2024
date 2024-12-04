@@ -3,3 +3,4 @@
 Solutions are in Python
 
 - [Day 1: Historian Hysteria](01/main.py)
+- [Day 2: Red-Nosed Reports](02/main.py)

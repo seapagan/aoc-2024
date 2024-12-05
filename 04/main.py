@@ -48,8 +48,41 @@ def part1(grid: list[str]) -> int:
     return count
 
 
+def part2(grid: list[str]) -> int:
+    """Count the number of X-MAS patterns in the grid."""
+    rows, cols = len(grid), len(grid[0])
+    count = 0
+
+    if rows < 3 or cols < 3:
+        return 0  # anything less than 3x3 grid wont work anyway.
+
+    # Check if we can form two 'MAS' segments in the X
+    for r in range(1, rows - 1):
+        for c in range(1, cols - 1):
+            # Center must be 'A'
+            if grid[r][c] != "A":
+                continue
+
+            # Check all possible diagonal configurations
+            top_left = grid[r - 1][c - 1]
+            top_right = grid[r - 1][c + 1]
+            bottom_left = grid[r + 1][c - 1]
+            bottom_right = grid[r + 1][c + 1]
+
+            if (top_left + bottom_right in {"MS", "SM"}) and (
+                top_right + bottom_left in {"MS", "SM"}
+            ):
+                count += 1
+
+    return count
+
+
 # -------------------------------- do the work ------------------------------- #
 data = read_data()
 
-# O(n^2) - answer for me is 2458
+
+# O(n^2) for square grid - answer for me is 2458
 print(f"Answer for Part 1 (number of 'XMAS' in the grid) is {part1(data)}")
+
+# O(n^2) for square grid - answer for me is 1737
+print(f"Answer for Part 2 (number of 'X-MAS' in the grid) is {part2(data)}")

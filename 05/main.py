@@ -98,7 +98,7 @@ def day5() -> tuple[int, int]:
 # -------------------------------- do the work ------------------------------- #
 rules, updates = get_data()
 rule_dict = preprocess_rules()
-valid_count, fixed_count = day5()  # 6949 for my data
+valid_count, fixed_count = day5()
 
 print(f"Valid updates total: {valid_count}")  # 6949 for me.
 print(f"Fixed update total: {fixed_count}")  # 4145 for me.

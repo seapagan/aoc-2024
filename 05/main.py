@@ -45,10 +45,29 @@ def preprocess_rules() -> defaultdict[int, set[int]]:
     return rule_dict
 
 
-def part1() -> int:
+def reorder_bad_update(update: list[int]) -> list[int]:
+    """Reorder an update based on the global RULE_DICT."""
+    while True:
+        swapped = False
+        for page, dependencies in rule_dict.items():
+            if page in update:
+                for dependent in dependencies:
+                    if dependent in update:
+                        i1 = update.index(page)
+                        i2 = update.index(dependent)
+                        if i1 > i2:
+                            # Swap elements to correct order
+                            update[i1], update[i2] = update[i2], update[i1]
+                            swapped = True
+        if not swapped:
+            break
+    return update
+
+
+def day5() -> tuple[int, int]:
     """Identify which updates are in the correct order."""
-    rule_dict = preprocess_rules()
-    count = 0
+    valid_count = 0
+    fixed_count = 0
 
     for update in updates:
         valid = True
@@ -66,15 +85,20 @@ def part1() -> int:
 
         if valid:
             # This is a valid update
-            middle_number = update[len(update) // 2]
-            count += middle_number
+            valid_count += update[len(update) // 2]
+        else:
+            # this is an INVALID update, but we can fix it by sorting and
+            # getting the middle page.
+            fixed_update = reorder_bad_update(update)
+            fixed_count += fixed_update[len(fixed_update) // 2]
 
-    return count
+    return valid_count, fixed_count
 
 
 # -------------------------------- do the work ------------------------------- #
 rules, updates = get_data()
+rule_dict = preprocess_rules()
+valid_count, fixed_count = day5()  # 6949 for my data
 
-part1_result = part1()  # 6949 for my data
-
-print(f"Updates in the Correct Order are: {part1_result}")  # 6949 for me.
+print(f"Valid updates total: {valid_count}")  # 6949 for me.
+print(f"Fixed update total: {fixed_count}")  # 4145 for me.

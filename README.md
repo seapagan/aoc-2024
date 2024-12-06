@@ -15,3 +15,4 @@ Solutions are in Python.
 - [Day 3: Mull It Over](03/main.py)
 - [Day 4: Ceres Search](04/main.py)
 - [Day 5: Print Queue](05/main.py)
+- [Day 6: Guard Gallivant](06/main.py)

@@ -1,4 +1,4 @@
-"""AOC 2024 - Day 5: Guard Gallivant."""
+"""AOC 2024 - Day 6: Guard Gallivant."""
 
 from __future__ import annotations
 
@@ -86,7 +86,7 @@ def part2(
     dimensions: tuple[int, int], start_pos: tuple[int, int], grid: list[str]
 ) -> int:
     """Solve part 2 of the puzzle."""
-    DIRECTIONS = [(-1, 0), (0, 1), (1, 0), (0, -1)]
+    directions = [(-1, 0), (0, 1), (1, 0), (0, -1)]
     width, height = dimensions
     valid_positions = 0
 
@@ -96,7 +96,8 @@ def part2(
     adjacent_positions = set()
 
     # Get the original path and build set of adjacent positions Really should be
-    # able to extract this out so can be used in both Part1 and Part2
+    # able to extract this out so can be used in both Part1 and Part2, maybe
+    # later if i have a bit of time.
     while True:
         state = (*current_pos, current_direction)
         if state in original_path:
@@ -104,7 +105,7 @@ def part2(
         original_path.add(state)
 
         # Add adjacent positions to test
-        for dy, dx in DIRECTIONS:
+        for dy, dx in directions:
             adj_y = current_pos[1] + dy
             adj_x = current_pos[0] + dx
             if (
@@ -116,8 +117,8 @@ def part2(
                 adjacent_positions.add((adj_x, adj_y))
 
         # Calculate next position
-        next_y = current_pos[1] + DIRECTIONS[current_direction][0]
-        next_x = current_pos[0] + DIRECTIONS[current_direction][1]
+        next_y = current_pos[1] + directions[current_direction][0]
+        next_x = current_pos[0] + directions[current_direction][1]
 
         if not (0 <= next_y < height and 0 <= next_x < width):
             break
@@ -141,8 +142,8 @@ def part2(
 
             path.add(state)
 
-            next_y = current_pos[1] + DIRECTIONS[current_direction][0]
-            next_x = current_pos[0] + DIRECTIONS[current_direction][1]
+            next_y = current_pos[1] + directions[current_direction][0]
+            next_x = current_pos[0] + directions[current_direction][1]
 
             if not (0 <= next_y < height and 0 <= next_x < width):
                 break

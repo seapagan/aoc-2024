@@ -47,23 +47,6 @@ def get_data() -> Iterable[tuple[int, list[int]]]:
         ]
 
 
-def evaluate_expression(numbers: list[int], operators: Iterable[str]) -> int:
-    """
-    Evaluate an expression left-to-right given numbers and operators.
-    Numbers and operators must be of compatible lengths: len(numbers) == len(operators) + 1.
-    Supports +, *, and || operators.
-    """
-    result = numbers[0]
-    for num, op in zip(numbers[1:], operators):
-        if op == "+":
-            result += num
-        elif op == "*":
-            result *= num
-        elif op == "||":
-            result = int(str(result) + str(num))  # Concatenate digits
-    return result
-
-
 def is_valid_equation(target: int, numbers: list[int], operators: list[str]) -> bool:
     """
     Check if the target value can be produced by inserting the specified operators between numbers.
@@ -72,8 +55,21 @@ def is_valid_equation(target: int, numbers: list[int], operators: list[str]) -> 
     all_operator_combinations = product(operators, repeat=num_operators)
 
     for operator_combination in all_operator_combinations:
-        if evaluate_expression(numbers, operator_combination) == target:
-            return True
+        result = numbers[0]
+        for num, op in zip(numbers[1:], operator_combination):
+            if op == "+":
+                result += num
+            elif op == "*":
+                result *= num
+            elif op == "||":
+                result = int(str(result) + str(num))
+
+            # Prune if result exceeds the target (assuming non-negative numbers)
+            if result > target:
+                break
+        else:  # Only execute if the loop didn't break
+            if result == target:
+                return True
     return False
 
 

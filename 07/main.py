@@ -51,6 +51,7 @@ def evaluate_expression(numbers: list[int], operators: Iterable[str]) -> int:
     """
     Evaluate an expression left-to-right given numbers and operators.
     Numbers and operators must be of compatible lengths: len(numbers) == len(operators) + 1.
+    Supports +, *, and || operators.
     """
     result = numbers[0]
     for num, op in zip(numbers[1:], operators):
@@ -58,42 +59,46 @@ def evaluate_expression(numbers: list[int], operators: Iterable[str]) -> int:
             result += num
         elif op == "*":
             result *= num
+        elif op == "||":
+            result = int(str(result) + str(num))  # Concatenate digits
     return result
 
 
-def is_valid_equation(target: int, numbers: list[int]) -> bool:
+def is_valid_equation(target: int, numbers: list[int], operators: list[str]) -> bool:
     """
-    Check if the target value can be produced by inserting operators between numbers.
+    Check if the target value can be produced by inserting the specified operators between numbers.
     """
     num_operators = len(numbers) - 1
-    all_operator_combinations = product(["+", "*"], repeat=num_operators)
+    all_operator_combinations = product(operators, repeat=num_operators)
 
-    for operators in all_operator_combinations:
-        if evaluate_expression(numbers, operators) == target:
+    for operator_combination in all_operator_combinations:
+        if evaluate_expression(numbers, operator_combination) == target:
             return True
     return False
 
 
 @timer
-def part1(data) -> int:
-    """Solve part 1 of the puzzle."""
+def part1(data: list[tuple[int, list[int]]]) -> int:
+    """
+    Solve Part 1 by determining the total of all valid test values using + and *.
+    """
     total = 0
     for target, numbers in data:
-        if is_valid_equation(target, numbers):
+        if is_valid_equation(target, numbers, ["+", "*"]):  # Only + and *
             total += target
     return total
 
 
 @timer
-def part2(data) -> int:
-    """Solve part 2 of the puzzle."""
-    result = 0
-
-    return result
-
-
-test_data = """
-"""
+def part2(data: list[tuple[int, list[int]]]) -> int:
+    """
+    Solve Part 2 by determining the total of all valid test values using +, *, and ||.
+    """
+    total = 0
+    for target, numbers in data:
+        if is_valid_equation(target, numbers, ["+", "*", "||"]):  # Include ||
+            total += target
+    return total
 
 
 def main() -> None:
@@ -104,9 +109,9 @@ def main() -> None:
     result1 = part1(data)
     print(f"Part 1: The total calibration result is : {result1}")
 
-    # Part 2 - answer for me is ?
+    # Part 2 - answer for me is 106016735664498
     result2 = part2(data)
-    print(f"Part 2: {result2}.")
+    print(f"Part 2: {result2}")
 
 
 if __name__ == "__main__":

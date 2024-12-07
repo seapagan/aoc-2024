@@ -74,40 +74,46 @@ def is_valid_equation(target: int, numbers: list[int], operators: list[str]) -> 
 
 
 @timer
-def part1(data: list[tuple[int, list[int]]]) -> int:
+def part1(data: list[tuple[int, list[int]]]) -> tuple[int, list[tuple[int, list[int]]]]:
     """
     Solve Part 1 by determining the total of all valid test values using + and *.
+    Returns the total and the list of failed equations.
     """
     total = 0
+    failed_equations = []
+
     for target, numbers in data:
         if is_valid_equation(target, numbers, ["+", "*"]):  # Only + and *
             total += target
-    return total
+        else:
+            failed_equations.append((target, numbers))  # Keep track of failed equations
+
+    return total, failed_equations
 
 
 @timer
-def part2(data: list[tuple[int, list[int]]]) -> int:
+def part2(failed_data: list[tuple[int, list[int]]]) -> int:
     """
     Solve Part 2 by determining the total of all valid test values using +, *, and ||.
     """
     total = 0
-    for target, numbers in data:
+    for target, numbers in failed_data:
         if is_valid_equation(target, numbers, ["+", "*", "||"]):  # Include ||
             total += target
     return total
 
 
 def main() -> None:
-    """Run the AOC problems for Day 6."""
+    """Run the AOC problems for Day 7."""
     data = get_data()
 
     # Part 1 - answer for me is 12940396350192
-    result1 = part1(data)
+    result1, failed_data = part1(data)
     print(f"Part 1: The total calibration result is : {result1}")
 
     # Part 2 - answer for me is 106016735664498
-    result2 = part2(data)
-    print(f"Part 2: {result2}")
+    result2 = result1 + part2(failed_data)
+    print(f"Part 2: The Fixed calibration result is : {result2}")
 
 
 if __name__ == "__main__":

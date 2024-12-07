@@ -6,14 +6,23 @@ import time
 from functools import wraps
 from itertools import product
 from pathlib import Path
-from typing import Iterable
+from typing import TYPE_CHECKING, Callable, ParamSpec, TypeVar
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
+P = ParamSpec("P")
+R = TypeVar("R")
 
 
-def timer(func):
-    """Decorator to measure the execution time of a function in milliseconds."""
+def timer(func: Callable[P, R]) -> Callable[P, R]:
+    """Measure the execution time of a function in milliseconds.
+
+    This is a decorator that can be added to any function.
+    """
 
     @wraps(func)
-    def wrapper(*args, **kwargs):
+    def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
         start_time = time.perf_counter()
         result = func(*args, **kwargs)
         end_time = time.perf_counter()
@@ -26,8 +35,8 @@ def timer(func):
 
 @timer
 def get_data() -> Iterable[tuple[int, list[int]]]:
-    """
-    Process the input file and return a list of tuples:
+    """Process the input file and return a list of tuples.
+
     Each tuple contains:
         - An integer (test value)
         - A list of integers (operators)
@@ -48,9 +57,7 @@ def get_data() -> Iterable[tuple[int, list[int]]]:
 
 
 def is_valid_equation(target: int, numbers: list[int], operators: list[str]) -> bool:
-    """
-    Check if the target value can be produced by inserting the specified operators between numbers.
-    """
+    """Check if the target value can be produced with provided operators."""
     num_operators = len(numbers) - 1
     all_operator_combinations = product(operators, repeat=num_operators)
 
@@ -74,9 +81,12 @@ def is_valid_equation(target: int, numbers: list[int], operators: list[str]) -> 
 
 
 @timer
-def part1(data: list[tuple[int, list[int]]]) -> tuple[int, list[tuple[int, list[int]]]]:
-    """
-    Solve Part 1 by determining the total of all valid test values using + and *.
+def part1(
+    data: Iterable[tuple[int, list[int]]],
+) -> tuple[int, list[tuple[int, list[int]]]]:
+    """Solve Part 1.
+
+    We determine the total of all valid test values using + and *.
     Returns the total and the list of failed equations.
     """
     total = 0
@@ -93,8 +103,9 @@ def part1(data: list[tuple[int, list[int]]]) -> tuple[int, list[tuple[int, list[
 
 @timer
 def part2(failed_data: list[tuple[int, list[int]]]) -> int:
-    """
-    Solve Part 2 by determining the total of all valid test values using +, *, and ||.
+    """Solve Part 2.
+
+    We only work on the failed sets from the first part.
     """
     total = 0
     for target, numbers in failed_data:

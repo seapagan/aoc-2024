@@ -17,7 +17,6 @@ from typing import (
 P = ParamSpec("P")
 R = TypeVar("R")
 
-Grid: TypeAlias = list[list[str]]
 AntennaMap: TypeAlias = defaultdict[str, list[tuple[int, int]]]
 Bounds: TypeAlias = tuple[int, int]
 
@@ -25,7 +24,6 @@ Bounds: TypeAlias = tuple[int, int]
 class DataDict(TypedDict):
     """Define typing for the get_data() function."""
 
-    map: Grid
     antennas: AntennaMap
     bounds: Bounds
 
@@ -52,21 +50,21 @@ def timer(func: Callable[P, R]) -> Callable[P, R]:
 def get_data(input_file: str = "input.txt") -> DataDict:
     """Process the input file and return in a usable format."""
     with Path(input_file).open() as file:
-        grid: Grid = []
         antennas: AntennaMap = defaultdict(list)
+        rows = 0
+        cols = 0
 
         for line_index, line in enumerate(file):
             stripped_line = line.strip()
-            this_line = []
+            rows += 1
+            cols = max(cols, len(stripped_line))
             for pos_index, position in enumerate(stripped_line):
                 if position != ".":
                     antennas[position].append((line_index, pos_index))
-                this_line.append(position)
-            grid.append(this_line)
 
-    bounds: Bounds = len(grid), len(grid[0])
+    bounds: Bounds = rows, cols
 
-    return {"map": grid, "antennas": antennas, "bounds": bounds}
+    return {"antennas": antennas, "bounds": bounds}
 
 
 @timer

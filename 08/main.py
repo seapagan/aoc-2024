@@ -155,6 +155,7 @@ def part2(data: DataDict) -> int:
     return len(antinodes)
 
 
+@timer
 def main() -> None:
     """Run the AOC problems for Day 8."""
 
@@ -171,3 +172,10 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+# Timing on my machine:
+# -> get_data() took 0.085 ms
+# -> part1() took 0.104 ms
+# -> part2() took 0.204 ms
+#
+# -> In total: 0.414 ms

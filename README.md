@@ -5,10 +5,9 @@ Solutions are in Python.
 > [!NOTE]
 >
 > These solutions may use global variables and other bad practices I
-> wouldn't use in production code, but that works for AOC code! I have tried to
+> wouldn't use in production code, but that works for AOC :grin: I have tried to
 > keep them clean and as efficient as I can with my current low knowledge of
-> standard algorithms. Maybe I'll revisit them in the future to improve them
-> :grin:.
+> standard algorithms. Maybe I'll revisit them in the future to improve them.
 
 - [Day 1: Historian Hysteria](01/main.py)
 - [Day 2: Red-Nosed Reports](02/main.py)
@@ -16,3 +15,5 @@ Solutions are in Python.
 - [Day 4: Ceres Search](04/main.py)
 - [Day 5: Print Queue](05/main.py)
 - [Day 6: Guard Gallivant](06/main.py)
+- [Day 7: Bridge Repair](07/main.py)
+- [Day 8: Resonant Collinearity](08/main.py)

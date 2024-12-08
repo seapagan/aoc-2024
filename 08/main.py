@@ -6,7 +6,15 @@ import time
 from collections import defaultdict
 from functools import wraps
 from pathlib import Path
-from typing import TYPE_CHECKING, Callable, ParamSpec, TypeAlias, TypedDict, TypeVar
+from typing import (
+    TYPE_CHECKING,
+    Callable,
+    Optional,
+    ParamSpec,
+    TypeAlias,
+    TypedDict,
+    TypeVar,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -46,9 +54,9 @@ def timer(func: Callable[P, R]) -> Callable[P, R]:
 
 
 @timer
-def get_data() -> DataDict:
-    """Process the input file, return in a suitable format."""
-    with Path("./input.txt").open() as file:
+def get_data(input_file: str = "input.txt") -> DataDict:
+    """Process the input file and return in a usable format."""
+    with Path(input_file).open() as file:
         grid: Grid = []
         antennas: AntennaMap = defaultdict(list)
 
@@ -67,13 +75,35 @@ def get_data() -> DataDict:
 
 
 @timer
-def part1(
-    data: Iterable[str],
-) -> int:
-    """Solve Part 1."""
-    total = 0
+def part1(data: DataDict) -> int:
+    """Solve Part 1 count the number of valid antinodes."""
+    antennas = data["antennas"]
+    rows, cols = data["bounds"]
+    unique_antinodes = set()
 
-    return total
+    for positions in antennas.values():
+        for i in range(len(positions)):
+            for j in range(i + 1, len(positions)):
+                a1 = positions[i]
+                a2 = positions[j]
+
+                dx, dy = a2[0] - a1[0], a2[1] - a1[1]
+
+                # find potential canditates
+                candidates = [
+                    (a2[0] + dx, a2[1] + dy),
+                    (a1[0] - dx, a1[1] - dy),
+                ]
+
+                for candidate in candidates:
+                    if 0 <= candidate[0] < rows and 0 <= candidate[1] < cols:
+                        d1 = abs(candidate[0] - a1[0]) + abs(candidate[1] - a1[1])
+                        d2 = abs(candidate[0] - a2[0]) + abs(candidate[1] - a2[1])
+
+                        if d1 == 2 * d2 or d2 == 2 * d1:
+                            unique_antinodes.add(candidate)
+
+    return len(unique_antinodes)
 
 
 @timer
@@ -88,13 +118,13 @@ def part2(
 
 def main() -> None:
     """Run the AOC problems for Day 8."""
-    data = get_data()
 
-    print(data)
+    data = get_data("test_input.txt")
+    # data = get_data()
 
-    # Part 1 - answer for me is ?
+    # Part 1 - answer for me is 293
     result1 = part1(data)
-    print(f"Part 1: {result1}")
+    print(f"Part 1: Number of unique antinodes is {result1}")
 
     # Part 2 - answer for me is ?
     result2 = part2(data)

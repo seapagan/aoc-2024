@@ -7,17 +7,12 @@ from collections import defaultdict
 from functools import wraps
 from pathlib import Path
 from typing import (
-    TYPE_CHECKING,
     Callable,
-    Optional,
     ParamSpec,
     TypeAlias,
     TypedDict,
     TypeVar,
 )
-
-if TYPE_CHECKING:
-    from collections.abc import Iterable
 
 P = ParamSpec("P")
 R = TypeVar("R")
@@ -47,7 +42,7 @@ def timer(func: Callable[P, R]) -> Callable[P, R]:
         result = func(*args, **kwargs)
         end_time = time.perf_counter()
         elapsed_time_ms = (end_time - start_time) * 1000
-        print(f"{func.__name__}() took {elapsed_time_ms:.3f} ms")
+        print(f" [ {func.__name__}() took {elapsed_time_ms:.3f} ms ]")
         return result
 
     return wrapper
@@ -107,28 +102,73 @@ def part1(data: DataDict) -> int:
 
 
 @timer
-def part2(
-    data: Iterable[str],
-) -> int:
-    """Solve Part 2."""
-    total = 0
+def part2(data: DataDict) -> int:
+    """
+    Solve Part 2 by finding all valid antinodes based on in-line points between antennas.
+    """
+    from math import gcd
 
-    return total
+    antennas = data["antennas"]
+    rows, cols = data["bounds"]
+    antinodes = set()
+
+    for positions in antennas.values():
+        if len(positions) < 2:
+            continue
+
+        # Include all antennas as antinodes
+        for position in positions:
+            antinodes.add(position)
+
+        # Process all unique pairs of antennas
+        for i in range(len(positions)):
+            for j in range(i + 1, len(positions)):
+                a1 = positions[i]
+                a2 = positions[j]
+
+                dx, dy = a2[0] - a1[0], a2[1] - a1[1]
+                step_x, step_y = dx // gcd(dx, dy), dy // gcd(dx, dy)
+
+                # Generate all points between the antennas
+                x, y = a1
+                while (x, y) != a2:
+                    antinodes.add((x, y))
+                    x += step_x
+                    y += step_y
+
+                # Add the second antenna
+                antinodes.add(a2)
+
+                # Extend the line beyond both antennas
+                # Forward direction
+                x, y = a2[0] + step_x, a2[1] + step_y
+                while 0 <= x < rows and 0 <= y < cols:
+                    antinodes.add((x, y))
+                    x += step_x
+                    y += step_y
+
+                # Backward direction
+                x, y = a1[0] - step_x, a1[1] - step_y
+                while 0 <= x < rows and 0 <= y < cols:
+                    antinodes.add((x, y))
+                    x -= step_x
+                    y -= step_y
+
+    return len(antinodes)
 
 
 def main() -> None:
     """Run the AOC problems for Day 8."""
 
-    data = get_data("test_input.txt")
-    # data = get_data()
+    data = get_data()
 
     # Part 1 - answer for me is 293
     result1 = part1(data)
     print(f"Part 1: Number of unique antinodes is {result1}")
 
-    # Part 2 - answer for me is ?
+    # Part 2 - answer for me is 934
     result2 = part2(data)
-    print(f"Part 2: {result2}")
+    print(f"Part 2: Taking into account resonance, we have {result2} unique antinodes")
 
 
 if __name__ == "__main__":

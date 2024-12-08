@@ -1,53 +1,83 @@
-"""AOC 2024 - Day 7: Bridge Repair."""
+"""AOC 2024 - Day x: xxxx."""
 
+from __future__ import annotations
+
+import time
+from functools import wraps
 from pathlib import Path
-from typing import Optional
+from typing import TYPE_CHECKING, Callable, ParamSpec, TypeVar
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
+P = ParamSpec("P")
+R = TypeVar("R")
 
 
-def get_data(
-    test_data: Optional[str] = None,
-) -> list:
-    """Get the input data."""
-    if test_data:
-        data = test_data.split()
-    else:
-        with Path("./input.txt").open() as file:
-            data = file.readlines()
+def timer(func: Callable[P, R]) -> Callable[P, R]:
+    """Measure the execution time of a function in milliseconds.
 
-    # pre-process if needed.
+    This is a decorator that can be added to any function.
+    """
 
-    return data
+    @wraps(func)
+    def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
+        start_time = time.perf_counter()
+        result = func(*args, **kwargs)
+        end_time = time.perf_counter()
+        elapsed_time_ms = (end_time - start_time) * 1000
+        print(f"{func.__name__}() took {elapsed_time_ms:.3f} ms")
+        return result
 
-
-def part1(data) -> int:
-    """Solve part 1 of the puzzle."""
-    result = 0
-
-    return result
+    return wrapper
 
 
-def part2(data) -> int:
-    """Solve part 2 of the puzzle."""
-    result = 0
+@timer
+def get_data() -> list[str]:
+    """Process the input file, return in a suitable format."""
+    with Path("./input.txt").open() as file:
+        # return [
+        #     (
+        #         int(line_parts[0][:-1]),  # Test value (remove trailing colon)
+        #         list(map(int, line_parts[1:])),  # List of operators
+        #     )
+        #     for line in file
+        #     if (line_parts := line.strip().split(" "))
+        # ]
+        return file.readlines()
 
-    return result
+
+@timer
+def part1(
+    data: Iterable[str],
+) -> int:
+    """Solve Part 1."""
+    total = 0
+
+    return total
 
 
-test_data = """
-"""
+@timer
+def part2(
+    data: Iterable[str],
+) -> int:
+    """Solve Part 2."""
+    total = 0
+
+    return total
 
 
 def main() -> None:
-    """Run the AOC problems for Day 6."""
+    """Run the AOC problems for Day x."""
     data = get_data()
 
-    # Part 1 - answer for me is 5129
+    # Part 1 - answer for me is ?
     result1 = part1(data)
-    print(f"Part 1: {result1}.")
+    print(f"Part 1: {result1}")
 
-    # Part 2 - answer for me is 1888
+    # Part 2 - answer for me is ?
     result2 = part2(data)
-    print(f"Part 2: {result2}.")
+    print(f"Part 2: {result2}")
 
 
 if __name__ == "__main__":

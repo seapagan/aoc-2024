@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import time
+from bisect import bisect_left
 from functools import wraps
 from pathlib import Path
 from typing import Callable, ParamSpec, TypeVar
@@ -47,7 +48,9 @@ def get_data(test_data: str | None = None) -> list[tuple[int, int]]:
             data = file.read().strip()
 
     return [
-        (int(data[i]), int(data[i + 1])) if i + 1 < len(data) else (int(data[i]), 0)
+        (int(data[i]), int(data[i + 1]))
+        if i + 1 < len(data)
+        else (int(data[i]), 0)
         for i in range(0, len(data), 2)
     ]
 
@@ -84,81 +87,133 @@ def part1(data: list[tuple[int, int]]) -> int:
 
         read_ptr -= 1  # Move read pointer backward
 
-    # Calculate the checksum
-    return sum(index * int(block) for index, block in enumerate(blocks) if block != ".")
+    return sum(
+        index * int(block) for index, block in enumerate(blocks) if block != "."
+    )
+
+
+def merge_free_spans(
+    spans: list[tuple[int, int]],
+    new_span: tuple[int, int],
+) -> list[tuple[int, int]]:
+    """Merge free spans into sorted order."""
+    start, end = new_span
+    if not spans:
+        return [new_span]
+
+    insert_pos = bisect_left(spans, (start, end))
+
+    merged = spans[:insert_pos]  # All spans before the insertion point
+    if merged and merged[-1][1] + 1 >= start:
+        # Merge with the last span in the merged list if adjacent/overlapping
+        merged[-1] = (merged[-1][0], max(merged[-1][1], end))
+    else:
+        # Add the new span if no merge is needed
+        merged.append((start, end))
+
+    # Add remaining spans, merging if necessary
+    for span_start, span_end in spans[insert_pos:]:
+        if merged[-1][1] + 1 >= span_start:
+            # Merge overlapping/adjacent spans
+            merged[-1] = (merged[-1][0], max(merged[-1][1], span_end))
+        else:
+            # Append non-overlapping spans
+            merged.append((span_start, span_end))
+
+    return merged
 
 
 @timer
 def part2(data: list[tuple[int, int]]) -> int:
-    """Compact whole files by moving to leftmost free space.
+    """Compact whole files by moving to leftmost free space."""
 
-    I'm really not happy with this answer as it takes 4s on my beast of a CPU,
-    I'll revisit it later I think.
-    """
+    def find_leftmost_free_span(
+        file_length: int,
+        max_position: int,
+    ) -> tuple[int, tuple[int, int]] | None:
+        """Find the leftmost free span that can fit the file."""
+        for index, (span_start, span_end) in enumerate(free_spans):
+            if span_start >= max_position:
+                break
+            if span_end - span_start + 1 >= file_length:
+                return index, (span_start, span_end)
+        return None
+
     blocks = parse_data_to_blocks(data)
 
-    # Precompute file locations in a single pass
+    # Pre-calculate the file locations
     files: list[tuple[int, int, int]] = []
-    current_file_id: int = -1
-    current_file_start: int = -1
+    current_file_id = -1
+    current_file_start = -1
 
     for i, block in enumerate(blocks):
         if isinstance(block, int):
             if current_file_id == -1:
                 current_file_id = block
                 current_file_start = i
-            elif block != current_file_id:  # New file starts
+            elif block != current_file_id:
                 files.append((current_file_id, current_file_start, i - 1))
                 current_file_id = block
                 current_file_start = i
-        elif current_file_id != -1:  # End of current file
+        elif current_file_id != -1:
             files.append((current_file_id, current_file_start, i - 1))
             current_file_id = -1
-            current_file_start = -1
 
-    # Handle last file if it exists
     if current_file_id != -1:
         files.append((current_file_id, current_file_start, len(blocks) - 1))
 
     # Sort files by descending ID
     files.sort(reverse=True, key=lambda x: x[0])
 
-    def find_leftmost_free_space(
-        blocks: list[int | str],
-        file_length: int,
-        max_position: int,
-    ) -> int | None:
-        start = None
-        for i in range(max_position):
-            if blocks[i] == ".":
-                if start is None:
-                    start = i
-                if i - start + 1 == file_length:
-                    return start
-            else:
-                start = None
-        return None
+    # Initialize free spans
+    free_spans: list[tuple[int, int]] = []
+    current_free_start = -1
 
-    # Process each file in descending ID order
+    for i, block in enumerate(blocks):
+        if block == ".":
+            if current_free_start == -1:
+                current_free_start = i
+        elif current_free_start != -1:
+            free_spans.append((current_free_start, i - 1))
+            current_free_start = -1
+
+    if current_free_start != -1:
+        free_spans.append((current_free_start, len(blocks) - 1))
+
     for file_id, file_start, file_end in files:
         file_length = file_end - file_start + 1
 
-        # Find leftmost free space
-        free_start = find_leftmost_free_space(blocks, file_length, file_start)
+        found_span = find_leftmost_free_span(file_length, file_start)
 
-        if free_start is not None:
+        if found_span is not None:
+            span_index, (span_start, span_end) = found_span
+            free_start = span_start
+
             # Move file
-            blocks[free_start : free_start + file_length] = [file_id] * file_length
+            blocks[free_start : free_start + file_length] = [
+                file_id
+            ] * file_length
             blocks[file_start : file_end + 1] = ["."] * file_length
 
-    # Calculate the checksum
-    return sum(index * int(block) for index, block in enumerate(blocks) if block != ".")
+            # Update free spans
+            del free_spans[span_index]
+            if free_start + file_length <= span_end:
+                free_spans = merge_free_spans(
+                    free_spans,
+                    (
+                        free_start + file_length,
+                        span_end,
+                    ),
+                )
+
+    return sum(
+        index * int(block) for index, block in enumerate(blocks) if block != "."
+    )
 
 
 def main() -> None:
     """Run the AOC problems for Day 9."""
-    data = get_data("2333133121414131402")
-    # data = get_data()
+    data = get_data()
 
     # Part 1 - answer for me is 6259790630969
     result1 = part1(data)
@@ -171,3 +226,7 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+# ---------------------------------- Timings --------------------------------- #
+# part1() : 7.860 ms
+# part2() : 224.828 ms

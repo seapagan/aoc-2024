@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import time
 from collections import deque
-from functools import wraps
+from functools import lru_cache, wraps
 from pathlib import Path
 from typing import Callable, ParamSpec, TypeVar
 
@@ -79,14 +79,45 @@ def part1(data: list[list[int]]) -> int:
     return ratings_sum
 
 
-@timer
-def part2(
-    data: list[list[int]],
-) -> int:
-    """Solve Part 2."""
-    total = 0
+def count_paths_from(grid: list[list[int]], start: tuple[int, int]) -> int:
+    """Count the number of distinct hiking trails starting from a given position."""
+    rows, cols = len(grid), len(grid[0])
 
-    return total
+    @lru_cache(None)
+    def dfs(row: int, col: int) -> int:
+        # Base case: Reached height 9
+        if grid[row][col] == 9:
+            return 1
+
+        # Count paths from valid neighbors
+        total_paths = 0
+        for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:  # Directions
+            nr, nc = row + dr, col + dc
+            if (
+                0 <= nr < rows
+                and 0 <= nc < cols
+                and grid[nr][nc] == grid[row][col] + 1  # Valid uphill step
+            ):
+                total_paths += dfs(nr, nc)
+
+        return total_paths
+
+    return dfs(*start)
+
+
+@timer
+def part2(data: list[list[int]]) -> int:
+    """Solve Part 2."""
+    ratings_sum = 0
+    rows, cols = len(data), len(data[0])
+
+    # Iterate over all trailheads (height 0) and calculate their ratings
+    for row in range(rows):
+        for col in range(cols):
+            if data[row][col] == 0:  # Found a trailhead
+                ratings_sum += count_paths_from(data, (row, col))
+
+    return ratings_sum
 
 
 def main() -> None:
@@ -97,7 +128,7 @@ def main() -> None:
     result1 = part1(data)
     print(f"Part 1: {result1}")
 
-    # Part 2 - answer for me is ?
+    # Part 2 - answer for me is 1686
     result2 = part2(data)
     print(f"Part 2: {result2}")
 

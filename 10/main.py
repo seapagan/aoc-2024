@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import time
+from collections import deque
 from functools import wraps
 from pathlib import Path
 from typing import Callable, ParamSpec, TypeVar
@@ -36,14 +37,46 @@ def get_data() -> list[list[int]]:
         return [[int(char) for char in line.strip()] for line in file]
 
 
-@timer
-def part1(
-    data: list[list[int]],
-) -> int:
-    """Solve Part 1."""
-    total = 0
+def bfs(grid: list[list[int]], start: tuple[int, int]) -> int:
+    """Perform BFS from a trailhead and count reachable height 9 positions."""
+    rows, cols = len(grid), len(grid[0])
+    queue = deque([start])
+    visited = set()
+    visited.add(start)
+    valid_trails = set()
 
-    return total
+    while queue:
+        row, col = queue.popleft()
+        for dr, dc in [
+            (-1, 0),
+            (1, 0),
+            (0, -1),
+            (0, 1),
+        ]:  # Up, down, left, right
+            nr, nc = row + dr, col + dc
+            if (
+                0 <= nr < rows
+                and 0 <= nc < cols
+                and (nr, nc) not in visited
+                and grid[nr][nc] == grid[row][col] + 1
+            ):
+                if grid[nr][nc] == 9:
+                    valid_trails.add((nr, nc))
+                queue.append((nr, nc))
+                visited.add((nr, nc))
+
+    return len(valid_trails)
+
+
+@timer
+def part1(data: list[list[int]]) -> int:
+    """Solve Part 1."""
+    ratings_sum = 0
+    for row in range(len(data)):
+        for col in range(len(data[0])):
+            if data[row][col] == 0:  # Found a trailhead
+                ratings_sum += bfs(data, (row, col))
+    return ratings_sum
 
 
 @timer
@@ -60,7 +93,7 @@ def main() -> None:
     """Run the AOC problems for Day 10."""
     data = get_data()
 
-    # Part 1 - answer for me is ?
+    # Part 1 - answer for me is 717
     result1 = part1(data)
     print(f"Part 1: {result1}")
 

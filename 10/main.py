@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import time
-from collections import deque
 from functools import lru_cache, wraps
 from pathlib import Path
 from typing import Callable, ParamSpec, TypeVar
@@ -39,100 +38,65 @@ def get_data() -> list[list[int]]:
         return [[int(char) for char in line.strip()] for line in file]
 
 
-def bfs(grid: list[list[int]], start: tuple[int, int]) -> int:
-    """Perform BFS from a trailhead and count reachable height 9 positions."""
+def calc_results(
+    grid: list[list[int]], start: tuple[int, int]
+) -> tuple[int, int]:
+    """Calc the result for both puzzle parts simultaneously."""
     rows, cols = len(grid), len(grid[0])
-    queue = deque([start])
-    visited = set()
-    visited.add(start)
     valid_trails = set()
 
-    while queue:
-        row, col = queue.popleft()
-        for dr, dc in [
-            (-1, 0),
-            (1, 0),
-            (0, -1),
-            (0, 1),
-        ]:  # Up, down, left, right
-            nr, nc = row + dr, col + dc
-            if (
-                0 <= nr < rows
-                and 0 <= nc < cols
-                and (nr, nc) not in visited
-                and grid[nr][nc] == grid[row][col] + 1
-            ):
-                if grid[nr][nc] == END_OF_TRAIL:
-                    valid_trails.add((nr, nc))
-                queue.append((nr, nc))
-                visited.add((nr, nc))
-
-    return len(valid_trails)
-
-
-@timer
-def part1(data: list[list[int]]) -> int:
-    """Solve Part 1."""
-    ratings_sum = 0
-    for row in range(len(data)):
-        for col in range(len(data[0])):
-            if data[row][col] == 0:  # Found a trailhead
-                ratings_sum += bfs(data, (row, col))
-    return ratings_sum
-
-
-def count_paths_from(grid: list[list[int]], start: tuple[int, int]) -> int:
-    """Count the number of distinct trails starting from a given position."""
-    rows, cols = len(grid), len(grid[0])
-
     @lru_cache(None)
-    def dfs(row: int, col: int) -> int:
-        # Base case: Reached height 9
+    def explore(row: int, col: int) -> int:
         if grid[row][col] == END_OF_TRAIL:
-            return 1
+            valid_trails.add((row, col))  # Track unique reachable 9s
+            return 1  # path ends here
 
-        # Count paths from valid neighbors
         total_paths = 0
         for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:  # Directions
             nr, nc = row + dr, col + dc
             if (
                 0 <= nr < rows
                 and 0 <= nc < cols
-                and grid[nr][nc] == grid[row][col] + 1  # Valid uphill step
+                and grid[nr][nc] == grid[row][col] + 1
             ):
-                total_paths += dfs(nr, nc)
+                total_paths += explore(
+                    nr, nc
+                )  # Accumulate paths from neighbors
 
         return total_paths
 
-    return dfs(*start)
+    total_trails = explore(*start)  # Start DFS
+    return len(valid_trails), total_trails  # Part 1 result, Part 2 result
 
 
 @timer
-def part2(data: list[list[int]]) -> int:
-    """Solve Part 2."""
-    ratings_sum = 0
+def solve(data: list[list[int]]) -> tuple[int, int]:
+    """Solve both Part 1 and Part 2 simultaneously."""
+    part1_sum = 0
+    part2_sum = 0
     rows, cols = len(data), len(data[0])
 
-    # Iterate over all trailheads (height 0) and calculate their ratings
     for row in range(rows):
         for col in range(cols):
             if data[row][col] == 0:  # Found a trailhead
-                ratings_sum += count_paths_from(data, (row, col))
+                part1, part2 = calc_results(data, (row, col))
+                part1_sum += part1
+                part2_sum += part2
 
-    return ratings_sum
+    return part1_sum, part2_sum
 
 
 def main() -> None:
     """Run the AOC problems for Day 10."""
     data = get_data()
 
-    # Part 1 - answer for me is 717
-    result1 = part1(data)
-    print(f"Part 1: {result1}")
-
-    # Part 2 - answer for me is 1686
-    result2 = part2(data)
-    print(f"Part 2: {result2}")
+    part1_result, part2_result = solve(data)
+    print(
+        f"Part 1: Sum of all trialhead scores is {part1_result}"
+    )  # 717 for me
+    print(
+        f"Part 2: Sum of all trailhead ratings is {part2_result}"
+    )  # 1686 for me
 
 
 if __name__ == "__main__":

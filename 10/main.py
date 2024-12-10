@@ -1,4 +1,4 @@
-"""AOC 2024 - Day x: xxxx."""
+"""AOC 2024 - Day 10: Hoof It."""
 
 from __future__ import annotations
 
@@ -30,15 +30,15 @@ def timer(func: Callable[P, R]) -> Callable[P, R]:
 
 
 @timer
-def get_data() -> list[str]:
+def get_data() -> list[list[int]]:
     """Process the input file, return in a suitable format."""
     with Path("./input.txt").open() as file:
-        return file.readlines()
+        return [[int(char) for char in line.strip()] for line in file]
 
 
 @timer
 def part1(
-    data: list[str],
+    data: list[list[int]],
 ) -> int:
     """Solve Part 1."""
     total = 0
@@ -48,7 +48,7 @@ def part1(
 
 @timer
 def part2(
-    data: list[str],
+    data: list[list[int]],
 ) -> int:
     """Solve Part 2."""
     total = 0
@@ -57,7 +57,7 @@ def part2(
 
 
 def main() -> None:
-    """Run the AOC problems for Day x."""
+    """Run the AOC problems for Day 10."""
     data = get_data()
 
     # Part 1 - answer for me is ?

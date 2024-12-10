@@ -11,6 +11,8 @@ from typing import Callable, ParamSpec, TypeVar
 P = ParamSpec("P")
 R = TypeVar("R")
 
+END_OF_TRAIL = 9
+
 
 def timer(func: Callable[P, R]) -> Callable[P, R]:
     """Measure the execution time of a function in milliseconds.
@@ -60,7 +62,7 @@ def bfs(grid: list[list[int]], start: tuple[int, int]) -> int:
                 and (nr, nc) not in visited
                 and grid[nr][nc] == grid[row][col] + 1
             ):
-                if grid[nr][nc] == 9:
+                if grid[nr][nc] == END_OF_TRAIL:
                     valid_trails.add((nr, nc))
                 queue.append((nr, nc))
                 visited.add((nr, nc))
@@ -80,13 +82,13 @@ def part1(data: list[list[int]]) -> int:
 
 
 def count_paths_from(grid: list[list[int]], start: tuple[int, int]) -> int:
-    """Count the number of distinct hiking trails starting from a given position."""
+    """Count the number of distinct trails starting from a given position."""
     rows, cols = len(grid), len(grid[0])
 
     @lru_cache(None)
     def dfs(row: int, col: int) -> int:
         # Base case: Reached height 9
-        if grid[row][col] == 9:
+        if grid[row][col] == END_OF_TRAIL:
             return 1
 
         # Count paths from valid neighbors

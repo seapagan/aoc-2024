@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import time
-from functools import lru_cache, wraps
+from functools import wraps
 from pathlib import Path
 from typing import TYPE_CHECKING, ParamSpec, TypeVar
 
@@ -48,7 +48,6 @@ def process_trail(
     rows, cols = len(grid), len(grid[0])
     valid_trails = set()
 
-    @lru_cache(None)
     def explore(row: int, col: int) -> int:
         if grid[row][col] == END_OF_TRAIL:
             valid_trails.add((row, col))  # Track unique reachable 9s
@@ -109,6 +108,6 @@ if __name__ == "__main__":
 # ---------------------------------- timings --------------------------------- #
 # ------------- Run on an i7-14700K with SSD and DDR5-6000 memory ------------ #
 # ---------------------------------------------------------------------------- #
-# get_data() : 0.170 ms
-#    solve() : 2.329 ms
-#     Total : 2.514 ms
+# get_data() : 0.168 ms
+#    solve() : 1.967 ms
+#      Total : 2.151 ms

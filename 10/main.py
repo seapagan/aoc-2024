@@ -5,7 +5,10 @@ from __future__ import annotations
 import time
 from functools import lru_cache, wraps
 from pathlib import Path
-from typing import Callable, ParamSpec, TypeVar
+from typing import TYPE_CHECKING, ParamSpec, TypeVar
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 P = ParamSpec("P")
 R = TypeVar("R")
@@ -38,10 +41,10 @@ def get_data() -> list[list[int]]:
         return [[int(char) for char in line.strip()] for line in file]
 
 
-def calc_results(
+def process_trail(
     grid: list[list[int]], start: tuple[int, int]
 ) -> tuple[int, int]:
-    """Calc the result for both puzzle parts simultaneously."""
+    """Process one trailhead for both puzzle parts simultaneously."""
     rows, cols = len(grid), len(grid[0])
     valid_trails = set()
 
@@ -65,7 +68,7 @@ def calc_results(
 
         return total_paths
 
-    total_trails = explore(*start)  # Start DFS
+    total_trails = explore(*start)
     return len(valid_trails), total_trails  # Part 1 result, Part 2 result
 
 
@@ -79,13 +82,14 @@ def solve(data: list[list[int]]) -> tuple[int, int]:
     for row in range(rows):
         for col in range(cols):
             if data[row][col] == 0:  # Found a trailhead
-                part1, part2 = calc_results(data, (row, col))
+                part1, part2 = process_trail(data, (row, col))
                 part1_sum += part1
                 part2_sum += part2
 
     return part1_sum, part2_sum
 
 
+@timer
 def main() -> None:
     """Run the AOC problems for Day 10."""
     data = get_data()
@@ -101,3 +105,10 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+# ---------------------------------- timings --------------------------------- #
+# ------------- Run on an i7-14700K with SSD and DDR5-6000 memory ------------ #
+# ---------------------------------------------------------------------------- #
+# get_data() : 0.170 ms
+#    solve() : 2.329 ms
+#     Total : 2.514 ms

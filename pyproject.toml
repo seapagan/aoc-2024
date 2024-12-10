@@ -1,2 +1,16 @@
 [tool.ruff]
+lint.ignore = ['T201', 'ERA001', 'COM812', 'INP001']
 line-length = 80
+lint.select = ["ALL"]
+target-version = "py310"
+
+[tool.ruff.format]
+indent-style = "space"
+quote-style = "double"
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.mypy]
+python_version = "3.10"
+strict = true

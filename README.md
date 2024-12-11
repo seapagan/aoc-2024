@@ -17,3 +17,6 @@ Solutions are in Python.
 - [Day 6: Guard Gallivant](06/main.py)
 - [Day 7: Bridge Repair](07/main.py)
 - [Day 8: Resonant Collinearity](08/main.py)
+- [Day 9: Disk Fragmenter](09/main.py)
+- [Day 10: Hoof It](10/main.py)
+- [Day 11: Plutonian Pebbles](11/main.py)

@@ -1,3 +1,8 @@
+[project]
+name = "aoc-2024"
+version = "2024"
+requires-python = ">=3.10"
+
 [tool.ruff]
 lint.ignore = ['T201', 'ERA001', 'COM812', 'INP001']
 line-length = 80

@@ -76,15 +76,13 @@ def get_final_stone_count(stone: str, t: int) -> int:
 @timer
 def part1(data: list[str]) -> int:
     """Get the result after 25 blinks."""
-    t = 25
-    return sum(get_final_stone_count(stone, t) for stone in data)
+    return sum(get_final_stone_count(stone, 25) for stone in data)
 
 
 @timer
 def part2(data: list[str]) -> int:
     """Get the result after 75 blinks."""
-    t = 75
-    return sum(get_final_stone_count(stone, t) for stone in data)
+    return sum(get_final_stone_count(stone, 75) for stone in data)
 
 
 @timer
@@ -106,8 +104,9 @@ if __name__ == "__main__":
 
 # ---------------------------------- timings --------------------------------- #
 # ------------- Run on an i7-14700K with SSD and DDR5-6000 memory ------------ #
+# ------------------------------- Python 3.13.1 ------------------------------ #
 # ---------------------------------------------------------------------------- #
 # get_data : 0.032 ms
-#    part1 : 1.762 ms
-#    part2 : 57.200 ms
-#    Total : 59.033 ms
+#    part1 : 1.722 ms
+#    part2 : 55.943 ms
+#    Total : 57.746 ms

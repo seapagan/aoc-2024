@@ -1,4 +1,4 @@
-"""AOC 2024 - Day x: xxxx."""
+"""AOC 2024 - Day 12: Garden Groups."""
 
 from __future__ import annotations
 

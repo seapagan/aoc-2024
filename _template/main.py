@@ -15,18 +15,18 @@ R = TypeVar("R")
 
 
 def timer(func: Callable[P, R]) -> Callable[P, R]:
-    """Measure the execution time of a function in milliseconds.
-
-    This is a decorator that can be added to any function.
-    """
+    """Measure the execution time of a function in milliseconds."""
 
     @wraps(func)
     def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
         start_time = time.perf_counter()
         result = func(*args, **kwargs)
-        end_time = time.perf_counter()
-        elapsed_time_ms = (end_time - start_time) * 1000
-        print(f"{func.__name__}() took {elapsed_time_ms:.3f} ms")
+        elapsed_time_ms = (time.perf_counter() - start_time) * 1000
+        print(
+            f"\nTotal Runtime was {elapsed_time_ms:.3f} ms"
+            if func.__name__ == "main"
+            else f"[ {func.__name__}() took {elapsed_time_ms:.3f} ms ]"
+        )
         return result
 
     return wrapper
@@ -74,3 +74,12 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+# ---------------------------------- timings --------------------------------- #
+# ------------- Run on an i7-14700K with SSD and DDR5-6000 memory ------------ #
+# ------------------------------- Python 3.13.1 ------------------------------ #
+# ---------------------------------------------------------------------------- #
+# get_data : x.xxx ms
+#    part1 : x.xxx ms
+#    part2 : x.xxx ms
+#    Total : x.xxx ms

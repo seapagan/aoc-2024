@@ -1,4 +1,4 @@
-"""AOC 2024 - Day x: xxxx."""
+"""AOC 2024 - Day 15: Warehouse Woes."""
 
 from __future__ import annotations
 
@@ -60,7 +60,7 @@ def part2(
 
 
 def main() -> None:
-    """Run the AOC problems for Day x."""
+    """Run the AOC problems for Day 15."""
     data = get_data()
 
     # Part 1 - answer for me is ?

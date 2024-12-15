@@ -2,16 +2,20 @@
 
 from __future__ import annotations
 
+import sys
 import time
 from functools import wraps
 from pathlib import Path
-from typing import TYPE_CHECKING, ParamSpec, TypeVar
+from typing import TYPE_CHECKING, ParamSpec, TypeAlias, TypeVar
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
 P = ParamSpec("P")
 R = TypeVar("R")
+
+InputData: TypeAlias = tuple[list[str], str]
+Point: TypeAlias = tuple[int, int]
 
 
 def timer(func: Callable[P, R]) -> Callable[P, R]:
@@ -33,20 +37,74 @@ def timer(func: Callable[P, R]) -> Callable[P, R]:
 
 
 @timer
-def get_data() -> list[str]:
+def get_data() -> InputData:
     """Process the input file, return in a suitable format."""
     with Path("./input.txt").open() as file:
-        return file.readlines()
+        warehouse, moves = file.read().split("\n\n")
+
+    grid = warehouse.split("\n")
+    moves = moves.replace("\n", "")
+
+    return grid, moves
 
 
 @timer
-def part1(
-    data: list[str],
-) -> int:
+def part1(data: InputData) -> int:
     """Solve Part 1."""
-    total = 0
+    grid, moves = data
 
-    return total
+    walls: set[Point] = set()
+    boxes: set[Point] = set()
+    robot = None
+
+    for r, row in enumerate(grid):
+        for c, char in enumerate(row):
+            if char == "#":
+                walls.add((r, c))
+            elif char == "O":
+                boxes.add((r, c))
+            elif char == "@":
+                robot = (r, c)
+
+    if not robot:
+        print("Cannot find the Robot, exiting!")
+        sys.exit(1)
+
+    directions: dict[str, Point] = {
+        "^": (-1, 0),
+        "v": (1, 0),
+        "<": (0, -1),
+        ">": (0, 1),
+    }
+
+    def is_valid_point(position: Point) -> bool:
+        return position not in walls and position not in boxes
+
+    for move in moves:
+        dr, dc = directions[move]
+        next_position = (robot[0] + dr, robot[1] + dc)
+
+        if next_position in boxes:
+            box_chain = []
+            current = next_position
+            while current in boxes:
+                box_chain.append(current)
+                current = (current[0] + dr, current[1] + dc)
+
+            if is_valid_point(current):
+                for box in reversed(box_chain):
+                    boxes.remove(box)
+                    boxes.add((box[0] + dr, box[1] + dc))
+                robot = next_position
+        elif is_valid_point(next_position):
+            robot = next_position
+
+    # Calculate the GPS sum for all boxes
+    gps_sum = 0
+    for r, c in boxes:
+        gps_sum += 100 * r + c
+
+    return gps_sum
 
 
 @timer
@@ -63,9 +121,9 @@ def main() -> None:
     """Run the AOC problems for Day 15."""
     data = get_data()
 
-    # Part 1 - answer for me is ?
+    # Part 1 - answer for me is 1451928
     result1 = part1(data)
-    print(f"Part 1: {result1}")
+    print(f"Part 1: The sum of all the box GPS coordinatese is {result1}")
 
     # Part 2 - answer for me is ?
     result2 = part2(data)

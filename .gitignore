@@ -216,3 +216,4 @@ pyrightconfig.json
 **/puzzle.md
 **/input.txt
 **/test_input.txt
+wip-*.py

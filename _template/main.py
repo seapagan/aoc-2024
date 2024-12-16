@@ -7,11 +7,17 @@ from functools import wraps
 from pathlib import Path
 from typing import TYPE_CHECKING, ParamSpec, TypeVar
 
+from rich import box
+from rich.console import Console
+from rich.table import Table
+
 if TYPE_CHECKING:
     from collections.abc import Callable
 
 P = ParamSpec("P")
 R = TypeVar("R")
+
+timing_results = []
 
 
 def timer(func: Callable[P, R]) -> Callable[P, R]:
@@ -22,14 +28,36 @@ def timer(func: Callable[P, R]) -> Callable[P, R]:
         start_time = time.perf_counter()
         result = func(*args, **kwargs)
         elapsed_time_ms = (time.perf_counter() - start_time) * 1000
-        print(
-            f"\nTotal Runtime was {elapsed_time_ms:.3f} ms"
-            if func.__name__ == "main"
-            else f"[ {func.__name__}() took {elapsed_time_ms:.3f} ms ]"
-        )
+        timing_results.append((func.__name__, elapsed_time_ms))
         return result
 
     return wrapper
+
+
+def print_timings() -> None:
+    """Pretty-print the timing results for all decorated functions."""
+    console = Console()
+    table = Table(show_header=False, title="Timing Results", box=box.ROUNDED)
+
+    table.add_column(justify="left", style="cyan", no_wrap=True)
+    table.add_column(justify="right", style="green")
+
+    for idx, (func_name, elapsed_time) in enumerate(timing_results):
+        is_last = idx == len(timing_results) - 1
+        is_second_to_last = idx == len(timing_results) - 2
+
+        display_name = (
+            "Total Runtime" if is_last and func_name == "main" else func_name
+        )
+
+        table.add_row(
+            display_name,
+            f"{elapsed_time:.3f} ms",
+            end_section=is_second_to_last and timing_results[-1][0] == "main",
+        )
+
+    console.print()
+    console.print(table, style="grey50")
 
 
 @timer
@@ -59,6 +87,7 @@ def part2(
     return total
 
 
+@timer
 def main() -> None:
     """Run the AOC problems for Day x."""
     data = get_data()
@@ -74,6 +103,7 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+    print_timings()
 
 # ---------------------------------- Timings --------------------------------- #
 # ------------- Run on an i7-14700K with SSD and DDR5-6000 memory ------------ #

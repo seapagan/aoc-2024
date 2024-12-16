@@ -23,6 +23,20 @@ R = TypeVar("R")
 
 timing_results = []
 
+# set some constants
+DIRECTIONS: dict[str, Point] = {
+    "E": (0, 1),
+    "S": (1, 0),
+    "W": (0, -1),
+    "N": (-1, 0),
+}
+ROTATIONS: dict[str, list[str]] = {
+    "E": ["N", "S"],
+    "S": ["E", "W"],
+    "W": ["S", "N"],
+    "N": ["W", "E"],
+}
+
 
 def timer(func: Callable[P, R]) -> Callable[P, R]:
     """Measure the execution time of a function in milliseconds."""
@@ -56,7 +70,7 @@ def print_timings() -> None:
 
         table.add_row(
             display_name,
-            f"{elapsed_time:.3f}",
+            f"{elapsed_time:.3f} ms",
             end_section=is_second_to_last and timing_results[-1][0] == "main",
         )
 
@@ -85,10 +99,13 @@ def get_data() -> tuple[Grid, Point, Point]:
     return grid, start, end
 
 
+def is_valid_move(grid: Grid, x: int, y: int) -> bool:
+    """Check if a move to (x,y) is valid."""
+    return 0 <= x < len(grid) and 0 <= y < len(grid[0]) and grid[x][y] != "#"
+
+
 @timer
-def part1(
-    data: tuple[Grid, Point, Point],
-) -> int:
+def part1(data: tuple[Grid, Point, Point]) -> int:
     """Solve Part 1.
 
     Doing this with a UCS (Uniform-Cost Search). Tried using A* but was
@@ -96,15 +113,6 @@ def part1(
     optimized more too.
     """
     grid, start, end = data
-    directions = {"E": (0, 1), "S": (1, 0), "W": (0, -1), "N": (-1, 0)}
-    rotations = {
-        "E": ["N", "S"],
-        "S": ["E", "W"],
-        "W": ["S", "N"],
-        "N": ["W", "E"],
-    }
-
-    # Priority queue: (cost, x, y, direction)
     pq = [(0, *start, "E")]
     visited: set[tuple[int, int, str]] = set()
 
@@ -118,30 +126,61 @@ def part1(
         if (x, y) == end:
             return cost
 
-        dx, dy = directions[direction]
+        dx, dy = DIRECTIONS[direction]
         nx, ny = x + dx, y + dy
-        if (
-            0 <= nx < len(grid)
-            and 0 <= ny < len(grid[0])
-            and grid[nx][ny] != "#"
-        ):
+        if is_valid_move(grid, nx, ny):
             heappush(pq, (cost + 1, nx, ny, direction))
 
         # Rotate clockwise or counterclockwise
-        for new_dir in rotations[direction]:
+        for new_dir in ROTATIONS[direction]:
             heappush(pq, (cost + 1000, x, y, new_dir))
 
     return 0  # can't find a good path. Just here to stop Ruff complaining!
 
 
 @timer
-def part2(
-    data: tuple[Grid, Point, Point],
-) -> int:
-    """Solve Part 2."""
-    total = 0
+def part2(data: tuple[Grid, Point, Point], min_cost: int) -> int:
+    """Solve Part 2.
 
-    return total
+    This is similar to part 1 but we also track the full paths and hold better
+    state. It is however about 20x slower!!
+    """
+    grid, start, end = data
+    optimal_tiles: set[Point] = set()
+    state_costs: dict[tuple[int, int, str], int] = {}
+
+    pq = [(0, *start, "E", {start})]
+
+    while pq:
+        cost, x, y, direction, path = heappop(pq)
+
+        if cost > min_cost:
+            continue
+
+        state = (x, y, direction)
+        if state in state_costs and state_costs[state] < cost:
+            continue
+        state_costs[state] = cost
+
+        if (x, y) == end and cost == min_cost:
+            optimal_tiles.update(path)
+            continue
+
+        dx, dy = DIRECTIONS[direction]
+        nx, ny = x + dx, y + dy
+        if is_valid_move(grid, nx, ny):
+            new_path = path | {(nx, ny)}
+            new_cost = cost + 1
+            if new_cost <= min_cost:
+                heappush(pq, (new_cost, nx, ny, direction, new_path))
+
+        # Rotate clockwise or counterclockwise
+        for new_dir in ROTATIONS[direction]:
+            new_cost = cost + 1000
+            if new_cost <= min_cost:
+                heappush(pq, (new_cost, x, y, new_dir, path))
+
+    return len(optimal_tiles)
 
 
 @timer
@@ -153,8 +192,8 @@ def main() -> None:
     result1 = part1(data)
     print(f"Part 1: {result1}")
 
-    # Part 2 - answer for me is ?
-    result2 = part2(data)
+    # Part 2 - answer for me is 456
+    result2 = part2(data, result1)
     print(f"Part 2: {result2}")
 
 
@@ -166,7 +205,7 @@ if __name__ == "__main__":
 # ------------- Run on an i7-14700K with SSD and DDR5-6000 memory ------------ #
 # ------------------------------- Python 3.13.1 ------------------------------ #
 # ---------------------------------------------------------------------------- #
-# get_data : x.xxx ms
-#    part1 : x.xxx ms
-#    part2 : x.xxx ms
-#    Total : x.xxx ms
+# get_data : 0.431 ms
+#    part1 : 37.723 ms
+#    part2 : 603.605 ms
+#    Total : 641.803 ms
